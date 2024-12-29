@@ -17,9 +17,15 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Middleware to log client IP
+app.use((req, res, next) => {
+  const clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  console.log(`Client IP: ${clientIP}`);
+  next();
+});
 
 app.use("/api/auth", authRoutes);
 
