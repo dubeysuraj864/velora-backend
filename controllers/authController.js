@@ -9,7 +9,7 @@ const isValidPassword = (password) => password.length >= 6;
 // Signup Controller
 exports.signup = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, profilePic = "", phone = "", address = "" } = req.body;
 
     if (!name || !email || !password) {
       return res
@@ -41,7 +41,7 @@ exports.signup = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = new User({ name, email, password: hashedPassword });
+    const user = new User({ name, email, password: hashedPassword, profilePic: "", phone:"", address:"" });
     await user.save();
 
     res
@@ -101,5 +101,29 @@ exports.login = async (req, res) => {
         success: false,
         message: "Server error. Please try again later.",
       });
+  }
+};
+
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { profilePic, name, phone, address } = req.body;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { profilePic, name, phone, address },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, message: "User has been updated successfully", user: updatedUser });
+
+  } catch (error) {
+    console.error("Update Profile Error:", error);
+    res.status(500).json({ success: false, message: "An error occurred while updating the profile" });
   }
 };
